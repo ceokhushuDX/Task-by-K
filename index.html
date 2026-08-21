@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task by K</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0913;
+      --surface: #161225;
+      --surface2: #1f1a30;
+      --border: #2b2440;
+      --accent: #a855f7;
+      --accent-dim: #8b3cf0;
+      --text: #f0f0f0;
+      --muted: #7a7290;
+      --done: #444;
+      --radius: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 80px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(168,85,247,0.16) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { width: 100%; max-width: 600px; position: relative; z-index: 1; }
+
+    header { margin-bottom: 40px; }
+
+    .brand { display: flex; align-items: baseline; gap: 10px; }
+
+    .brand-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 7vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .brand-title span { color: var(--accent); }
+
+    .brand-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+
+    .brand-sub { margin-top: 8px; font-size: 0.82rem; font-weight: 300; color: var(--muted); letter-spacing: 0.03em; }
+    .brand-sub strong { color: var(--accent); font-weight: 500; }
+
+    .user-greet { margin-top: 10px; font-size: 0.95rem; font-weight: 400; color: var(--text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .user-greet .name-val { color: var(--accent); font-weight: 500; }
+    .name-edit-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 500;
+      padding: 3px 10px; border-radius: 20px; cursor: pointer; letter-spacing: 0.03em;
+      transition: all 0.15s;
+    }
+    .name-edit-btn:hover { color: var(--text); border-color: var(--accent-dim); }
+    .name-edit-row { display: none; align-items: center; gap: 8px; margin-top: 10px; }
+    .name-edit-row.show { display: flex; }
+    .name-edit-input {
+      background: var(--surface); border: 1.5px solid var(--border); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 0.85rem; padding: 8px 12px;
+      border-radius: 10px; outline: none; flex: 1; min-width: 0; max-width: 220px;
+    }
+    .name-edit-input:focus { border-color: var(--accent); }
+    .name-save-btn {
+      background: var(--accent); color: #fff; border: none; font-size: 0.78rem; font-weight: 500;
+      padding: 8px 16px; border-radius: 10px; cursor: pointer; white-space: nowrap;
+    }
+    .name-save-btn:hover { background: var(--accent-dim); }
+
+    .stats { display: flex; gap: 12px; margin-bottom: 28px; }
+
+    .stat {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; line-height: 1; color: var(--text); }
+    .stat-num.accent { color: var(--accent); }
+    .stat-label { font-size: 0.72rem; font-weight: 400; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .input-row { display: flex; gap: 10px; margin-bottom: 28px; }
+
+    .task-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 400;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .task-input::placeholder { color: var(--muted); }
+    .task-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(168,85,247,0.18); }
+
+    .add-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 14px 22px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.02em;
+    }
+
+    .add-btn:hover { background: var(--accent-dim); }
+    .add-btn:active { transform: scale(0.97); }
+
+    .add-btn-sm {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 7px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .add-btn-sm:hover { background: var(--accent-dim); }
+
+    .filters { display: flex; gap: 6px; margin-bottom: 20px; }
+
+    .filter-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 7px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .filter-btn:hover { color: var(--text); border-color: var(--accent-dim); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .task-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      transition: border-color 0.2s, opacity 0.2s, transform 0.2s;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .task-item:hover { border-color: var(--accent-dim); }
+    .task-item.done { opacity: 0.5; }
+    .task-item.skipped { border-color: rgba(255,46,99,0.35); }
+    .task-item.skipped .task-text { color: #ff8fa3; }
+    .skip-tag { color: #ff2e63; font-weight: 500; }
+
+    .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .action-btn {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover { border-color: var(--accent); color: var(--text); }
+    .action-btn.tick.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .action-btn.cross.active { background: rgba(255,46,99,0.18); border-color: #ff2e63; color: #ff2e63; }
+
+    .task-text { flex: 1; font-size: 0.95rem; font-weight: 400; line-height: 1.4; transition: color 0.2s; word-break: break-word; }
+    .task-item.done .task-text { text-decoration: line-through; color: var(--muted); }
+
+    .delete-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #4a4360;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .delete-btn:hover { color: #ff6b6b; background: rgba(255,107,107,0.08); }
+
+    .task-body { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .task-date { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.03em; }
+    .task-item.done .task-date { color: #4a4360; }
+
+    .graph-range { display: flex; gap: 4px; }
+
+    .range-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .range-btn:hover { color: var(--text); border-color: var(--accent-dim); }
+    .range-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); display: none; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.4; }
+    .empty p { font-size: 0.9rem; font-weight: 300; }
+
+    footer { margin-top: 50px; text-align: center; font-size: 0.72rem; color: #352c4a; letter-spacing: 0.05em; text-transform: uppercase; }
+    footer span { color: var(--accent); }
+
+    .actions-row { display: flex; justify-content: flex-end; margin-bottom: 14px; min-height: 24px; }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      padding: 2px 0;
+      border-bottom: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .clear-btn:hover { color: #ff6b6b; border-color: #ff6b6b; }
+
+    /* Streak Banner */
+    .streak-banner {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .streak-banner.hot { border-color: rgba(168,85,247,0.45); background: linear-gradient(135deg, #161225 55%, rgba(168,85,247,0.12)); }
+    .streak-flame { font-size: 2rem; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(168,85,247,0.6)); transition: filter 0.3s; }
+    .streak-info { flex: 1; }
+    .streak-count { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .streak-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+    .streak-message { font-size: 0.8rem; color: var(--muted); text-align: right; max-width: 170px; line-height: 1.4; }
+    .streak-message strong { color: var(--text); font-weight: 500; }
+
+    /* AI Insights */
+    .ai-section { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+    .ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .ai-title { font-size: 0.78rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+    .ai-live { display: flex; align-items: center; gap: 5px; margin-left: auto; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .ai-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ee69c; box-shadow: 0 0 0 0 rgba(46,230,156,0.6); animation: livePulse 1.8s infinite; }
+    @keyframes livePulse {
+      0% { box-shadow: 0 0 0 0 rgba(46,230,156,0.55); }
+      70% { box-shadow: 0 0 0 6px rgba(46,230,156,0); }
+      100% { box-shadow: 0 0 0 0 rgba(46,230,156,0); }
+    }
+    .ai-insight { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .ai-insight:last-child { border-bottom: none; padding-bottom: 0; }
+    .ai-insight:first-of-type { padding-top: 12px; }
+    .ai-insight.ai-live-insight .ai-text { color: var(--text); }
+    .ai-insight.ai-live-insight {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(168,85,247,0.09), rgba(168,85,247,0.02));
+      margin: 0 -20px 4px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ai-insight.ai-live-insight::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(100deg, transparent 40%, rgba(168,85,247,0.14) 50%, transparent 60%);
+      background-size: 250% 100%;
+      animation: scanSweep 5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes scanSweep {
+      0% { background-position: 150% 0; }
+      50% { background-position: -50% 0; }
+      100% { background-position: -50% 0; }
+    }
+    .ai-insight.ai-live-insight.ai-flash { animation: flashPulse 0.6s ease; }
+    @keyframes flashPulse {
+      0% { box-shadow: inset 0 0 0 1px rgba(168,85,247,0.9), 0 0 18px rgba(168,85,247,0.35); }
+      100% { box-shadow: inset 0 0 0 1px rgba(168,85,247,0), 0 0 0 rgba(168,85,247,0); }
+    }
+    .ai-cursor { display: inline-block; width: 6px; height: 12px; background: var(--accent); margin-left: 3px; vertical-align: -1px; animation: cursorBlink 0.9s steps(1) infinite; }
+    @keyframes cursorBlink { 50% { opacity: 0; } }
+    .ai-icon { font-size: 1.15rem; flex-shrink: 0; line-height: 1.4; }
+    .ai-text { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
+    .ai-text strong { color: var(--accent); font-weight: 500; }
+    .ai-timestamp { font-size: 0.68rem; color: var(--muted); display: block; margin-top: 2px; }
+
+    /* Performance Graph */
+    .graph-section { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+    .graph-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+    .graph-title { font-size: 0.78rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .graph-legend { display: flex; gap: 12px; }
+    .legend-dot { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--muted); }
+    .legend-dot::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .legend-dot.completed::before { background: var(--accent); }
+    .legend-dot.added::before { background: #4a4360; }
+    .graph-canvas-wrap { position: relative; height: 130px; }
+    canvas#perfGraph { width: 100%; height: 130px; display: block; }
+
+    .graph-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #0b0913;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.7rem;
+      color: var(--text);
+      transform: translate(-50%, -105%);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.1s;
+      z-index: 5;
+      top: 0;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    }
+
+    .graph-tooltip.visible { opacity: 1; }
+    .graph-tooltip .tt-date { color: var(--muted); margin-bottom: 4px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .graph-tooltip .tt-val { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+    .graph-tooltip .tt-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .graph-days { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 2px; }
+    .graph-day-label { font-size: 0.65rem; color: var(--muted); text-align: center; }
+
+    /* Tests */
+    .tests-section { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+
+    .test-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+      background: var(--surface2);
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .test-input, .test-textarea {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      border-radius: 8px;
+      outline: none;
+      width: 100%;
+    }
+
+    .test-input:focus, .test-textarea:focus { border-color: var(--accent); }
+    .test-textarea { resize: vertical; min-height: 50px; font-family: inherit; }
+    .test-input::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+
+    .test-input.field-error, .test-textarea.field-error { border-color: #ff2e63; animation: fieldShake 0.35s ease; }
+    .test-field-msg { font-size: 0.72rem; color: #ff2e63; margin-top: -4px; display: none; }
+    .test-field-msg.show { display: block; }
+    @keyframes fieldShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .test-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .test-save-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .test-save-btn:hover { background: var(--accent-dim); }
+
+    .test-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+
+    .test-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .test-name { font-size: 0.88rem; font-weight: 500; }
+    .test-syllabus { font-size: 0.72rem; color: var(--muted); word-break: break-word; }
+
+    .test-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .test-countdown { font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .test-countdown.urgent { background: rgba(255,46,99,0.15); color: #ff2e63; }
+    .test-countdown.soon { background: rgba(168,85,247,0.18); color: var(--accent); }
+    .test-countdown.normal { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+    .test-delete { background: none; border: none; color: #4a4360; cursor: pointer; font-size: 0.9rem; padding: 2px 4px; }
+    .test-delete:hover { color: #ff6b6b; }
+
+    .empty-mini { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 10px 0; }
+
+    /* Streak-break overlay */
+    .noob-overlay {
+      position: fixed; inset: 0;
+      background: rgba(4,2,10,0.93);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.2s ease;
+      padding: 24px;
+    }
+
+    .noob-overlay.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .noob-card { text-align: center; animation: noobShake 0.5s ease; max-width: 420px; }
+
+    @keyframes noobShake {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      15% { transform: translateX(-12px) rotate(-2deg); }
+      30% { transform: translateX(10px) rotate(2deg); }
+      45% { transform: translateX(-8px) rotate(-1deg); }
+      60% { transform: translateX(8px) rotate(1deg); }
+      75% { transform: translateX(-4px); }
+    }
+
+    .noob-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(2.4rem, 12vw, 4.6rem);
+      color: #ff2e63;
+      text-shadow: 3px 3px 0 #a855f7, -3px -3px 0 #4a00e0;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+      line-height: 1.05;
+    }
+
+    .noob-sub { font-size: 1.05rem; color: #fff; margin-bottom: 30px; line-height: 1.5; }
+    .noob-sub strong { color: var(--accent); }
+
+    .noob-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .noob-btn:hover { background: var(--accent-dim); }
+    .noob-btn:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header>
+    <div class="brand">
+      <h1 class="brand-title">Task <span>by K</span></h1>
+    </div>
+    <p class="brand-sub" id="brandSub">Crafted by <strong>Khushwant Yadav</strong> · Stay on top of everything.</p>
+    <div class="user-greet" id="userGreet"></div>
+    <div class="name-edit-row" id="nameEditRow">
+      <input class="name-edit-input" id="nameEditInput" type="text" placeholder="Enter your name" maxlength="24"/>
+      <button class="name-save-btn" onclick="saveUserName()">Save</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="totalCount">0</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-num" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
+    <div class="stat"><div class="stat-num accent" id="doneCount">0</div><div class="stat-label">Done</div></div>
+  </div>
+
+  <div class="streak-banner" id="streakBanner">
+    <div class="streak-flame" id="streakFlame">💤</div>
+    <div class="streak-info">
+      <div class="streak-count" id="streakCount">0</div>
+      <div class="streak-label">Day Streak</div>
+    </div>
+    <div class="streak-message" id="streakMsg"><strong>L take.</strong> Complete a task today to run it back.</div>
+  </div>
+
+  <!-- AI Insights -->
+  <div class="ai-section">
+    <div class="ai-header">
+      <span class="ai-title">🤖 AI Insights</span>
+      <span class="ai-live"><span class="ai-live-dot"></span>Live</span>
+    </div>
+    <div id="aiInsights"></div>
+  </div>
+
+  <!-- Performance Graph -->
+  <div class="graph-section">
+    <div class="graph-header">
+      <div class="graph-title" id="graphTitle">Last 7 Days</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div class="graph-range">
+          <button class="range-btn active" onclick="setRange('7d',this)">7D</button>
+          <button class="range-btn" onclick="setRange('1m',this)">1M</button>
+          <button class="range-btn" onclick="setRange('6m',this)">6M</button>
+          <button class="range-btn" onclick="setRange('1y',this)">1Y</button>
+        </div>
+        <div class="graph-legend">
+          <div class="legend-dot completed">Done</div>
+          <div class="legend-dot added">Added</div>
+        </div>
+      </div>
+    </div>
+    <div class="graph-canvas-wrap">
+      <canvas id="perfGraph"></canvas>
+      <div class="graph-tooltip" id="graphTooltip"></div>
+    </div>
+    <div class="graph-days" id="graphDays"></div>
+  </div>
+
+  <!-- Test Reminders -->
+  <div class="tests-section">
+    <div class="graph-header">
+      <div class="graph-title">📚 Upcoming Tests</div>
+      <button class="add-btn-sm" onclick="toggleTestForm()">+ Add Test</button>
+    </div>
+    <div class="test-form" id="testForm" style="display:none">
+      <input class="test-input" id="testName" placeholder="Test name" maxlength="80"/>
+      <div class="test-field-msg" id="testNameMsg">Please enter a test name.</div>
+      <input class="test-input" id="testDate" type="date"/>
+      <div class="test-field-msg" id="testDateMsg">Please pick a valid date.</div>
+      <textarea class="test-textarea" id="testSyllabus" placeholder="Syllabus / topics to cover (optional)" maxlength="300"></textarea>
+      <button class="test-save-btn" id="testSaveBtn" onclick="addTest()">Save Test</button>
+    </div>
+    <div id="testList"></div>
+  </div>
+
+  <div class="input-row">
+    <input class="task-input" id="taskInput" type="text" placeholder="Add a new task…" maxlength="120" autocomplete="off"/>
+    <button class="add-btn" onclick="addTask()">+ Add</button>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" data-filter="pending" onclick="setFilter('pending', this)">Pending</button>
+    <button class="filter-btn" data-filter="done" onclick="setFilter('done', this)">Done</button>
+  </div>
+
+  <div class="actions-row">
+    <button class="clear-btn" id="clearBtn" onclick="clearDone()" style="display:none">Clear completed</button>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">✦</div>
+    <p>Nothing here yet.<br/>Add your first task above.</p>
+  </div>
+
+</div>
+
+<footer>Task by K &nbsp;·&nbsp; Built by <span>Khushwant Yadav</span></footer>
+
+<!-- Reset confirmation overlay -->
+<div class="noob-overlay" id="resetOverlay">
+  <div class="noob-card">
+    <div class="noob-title" style="font-size:clamp(1.6rem,7vw,2.4rem);">Reset everything?</div>
+    <div class="noob-sub">This clears your tasks, tests, name, and streak history on this device — <strong>cannot be undone</strong>.</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="noob-btn" style="background:#2b2440;" onclick="cancelResetAllData()">Cancel</button>
+      <button class="noob-btn" onclick="confirmResetAllData()">Yes, reset it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Streak-break overlay -->
+<div class="noob-overlay" id="noobOverlay">
+  <div class="noob-card">
+    <div class="noob-title">NOOB KIDO!!!</div>
+    <div class="noob-sub" id="noobSub">You lost your streak 💀</div>
+    <button class="noob-btn" onclick="closeNoobPopup()">bruh... restart 🔄</button>
+  </div>
+</div>
+
+<script>
+  let tasks = JSON.parse(localStorage.getItem('taskbyk') || '[]');
+  let tests = JSON.parse(localStorage.getItem('taskbyk_tests') || '[]');
+  let filter = 'all';
+  let graphRange = '7d';
+  let lastChartMeta = null;
+  let userName = localStorage.getItem('taskbyk_username') || '';
+
+  // ── Personalized name (visitor's own name, separate from the site credit) ──
+  function renderGreeting() {
+    const greetEl = document.getElementById('userGreet');
+    if (userName) {
+      greetEl.innerHTML = `Hey <span class="name-val">${escHtml(userName)}</span> 👋 <button class="name-edit-btn" onclick="toggleNameEdit()">Change name</button> <button class="name-edit-btn" onclick="resetAllData()">Reset my data</button>`;
+    } else {
+      greetEl.innerHTML = `<button class="name-edit-btn" onclick="toggleNameEdit()">+ Add your name</button> <button class="name-edit-btn" onclick="resetAllData()">Reset my data</button>`;
+    }
+  }
+
+  // Wipes everything stored in THIS browser only (name, tasks, tests, logs, streak,
+  // activity feed). Each visitor has their own separate local storage, so this can
+  // never affect anyone else's data.
+  function resetAllData() {
+    document.getElementById('resetOverlay').classList.add('show');
+  }
+
+  function confirmResetAllData() {
+    ['taskbyk','taskbyk_tests','taskbyk_log','taskbyk_laststreak','taskbyk_activity','taskbyk_username'].forEach(k => localStorage.removeItem(k));
+    location.reload();
+  }
+
+  function cancelResetAllData() {
+    document.getElementById('resetOverlay').classList.remove('show');
+  }
+
+  function toggleNameEdit() {
+    const row = document.getElementById('nameEditRow');
+    const input = document.getElementById('nameEditInput');
+    const opening = !row.classList.contains('show');
+    row.classList.toggle('show', opening);
+    if (opening) { input.value = userName; setTimeout(() => input.focus(), 30); }
+  }
+
+  function saveUserName() {
+    const input = document.getElementById('nameEditInput');
+    userName = input.value.trim().slice(0, 24);
+    if (userName) localStorage.setItem('taskbyk_username', userName);
+    else localStorage.removeItem('taskbyk_username');
+    document.getElementById('nameEditRow').classList.remove('show');
+    renderGreeting();
+    renderInsights();
+  }
+
+  document.getElementById('nameEditInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveUserName(); });
+
+  // ── Date helpers ──
+  function todayKey() { return dateKey(new Date()); }
+
+  function dateKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function monthKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+
+  function formatTaskDate(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const yest = new Date(now); yest.setDate(yest.getDate()-1);
+    const isYesterday = d.toDateString() === yest.toDateString();
+    if (isToday) return `Today, ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    if (isYesterday) return `Yesterday, ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    return d.toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}) +
+           ', ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function daysUntil(dateStr) {
+    const target = new Date(dateStr + 'T00:00:00');
+    const now = new Date(); now.setHours(0,0,0,0);
+    return Math.round((target - now) / 86400000);
+  }
+
+  // ── Daily log ──
+  let dailyLog = JSON.parse(localStorage.getItem('taskbyk_log') || '{}');
+  function saveLog() { localStorage.setItem('taskbyk_log', JSON.stringify(dailyLog)); }
+  function logToday(field) {
+    const k = todayKey();
+    if (!dailyLog[k]) dailyLog[k] = { added:0, completed:0, skipped:0 };
+    dailyLog[k][field]++;
+    saveLog();
+  }
+
+  // ── Activity log (powers the "live" reactive AI feed) ──
+  let activityLog = JSON.parse(localStorage.getItem('taskbyk_activity') || '[]');
+  function logActivity(type, label) {
+    activityLog.push({ type, label: label || '', ts: Date.now() });
+    if (activityLog.length > 40) activityLog = activityLog.slice(-40);
+    localStorage.setItem('taskbyk_activity', JSON.stringify(activityLog));
+  }
+
+  function timeAgo(ts) {
+    const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (s < 10) return 'just now';
+    if (s < 60) return `${s}s ago`;
+    const m = Math.round(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.round(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.round(h / 24);
+    return `${d}d ago`;
+  }
+
+  // Builds one "someone is watching" style reaction from recent activity —
+  // it's honest pattern-matching over what you actually did, nothing external.
+  const PHRASE_POOLS = {
+    added: [
+      l => `You just added "<strong>${l}</strong>".`,
+      l => `New one on the board: "<strong>${l}</strong>".`,
+      l => `Logged: "<strong>${l}</strong>" — let's see if it survives the week.`,
+      l => `"<strong>${l}</strong>" just landed on your list.`,
+    ],
+    completed: [
+      l => `You just checked off "<strong>${l}</strong>".`,
+      l => `"<strong>${l}</strong>" — done. Nice.`,
+      l => `Crossed off: "<strong>${l}</strong>". One less thing.`,
+      l => `"<strong>${l}</strong>" is officially finished.`,
+    ],
+    undone: [
+      l => `You unmarked "<strong>${l}</strong>". Changed your mind?`,
+      l => `"<strong>${l}</strong>" is back on the pending pile.`,
+    ],
+    deleted: [
+      l => `You deleted "<strong>${l}</strong>".`,
+      l => `"<strong>${l}</strong>" is gone — didn't even try, huh.`,
+      l => `Removed: "<strong>${l}</strong>".`,
+    ],
+    test_added: [
+      l => `Test scheduled — "<strong>${l}</strong>". I'll keep reminding you.`,
+      l => `Locked in: "<strong>${l}</strong>". No forgetting now.`,
+    ],
+    test_deleted: [
+      () => `A test reminder just got cleared.`,
+    ],
+    skipped: [
+      l => `You flagged "<strong>${l}</strong>" as not completed.`,
+      l => `"<strong>${l}</strong>" marked not done — noted for this week's insights.`,
+      l => `Not happening today: "<strong>${l}</strong>".`,
+    ],
+    unskipped: [
+      l => `"<strong>${l}</strong>" is back to plain pending.`,
+    ],
+  };
+  const TYPE_ICON = { added:'📝', completed:'✅', undone:'↩️', deleted:'🗑️', test_added:'📚', test_deleted:'🧹', skipped:'🚫', unskipped:'↩️' };
+  const MILESTONES = [5, 10, 25, 50, 100, 200, 500, 1000];
+
+  function totalCompletedAllTime() {
+    return Object.values(dailyLog).reduce((s, d) => s + (d.completed || 0), 0);
+  }
+
+  function getLiveReaction() {
+    if (activityLog.length === 0) return null;
+    const last = activityLog[activityLog.length - 1];
+    const prev = activityLog[activityLog.length - 2];
+    const hour = new Date(last.ts).getHours();
+    const gapToPrev = prev ? last.ts - prev.ts : Infinity;
+
+    const pool = PHRASE_POOLS[last.type] || [() => `You just did something.`];
+    const idx = last.ts % pool.length;
+    let msg = pool[idx](escHtml(last.label));
+    let icon = TYPE_ICON[last.type] || '👀';
+
+    // Rapid back-to-back actions
+    if (gapToPrev < 15000 && prev) {
+      msg += ` Two moves in under 15 seconds — I'm keeping up.`;
+      icon = '⚡';
+    } else if (gapToPrev > 3 * 24 * 3600 * 1000) {
+      msg += ` Haven't seen activity in a few days — good to have you back.`;
+      icon = '👋';
+    }
+
+    // Time-of-day flavor
+    if (hour >= 0 && hour < 5) {
+      msg += ` Grinding at this hour? Respect.`;
+    } else if (hour >= 5 && hour < 9 && last.type === 'completed') {
+      msg += ` Early win before the day even starts.`;
+    }
+
+    // Behavioral nudge: deleting more than completing recently
+    const recent = activityLog.slice(-6);
+    const recentDeletes = recent.filter(a => a.type === 'deleted').length;
+    const recentCompletes = recent.filter(a => a.type === 'completed').length;
+    if (recentDeletes >= 3 && recentDeletes > recentCompletes) {
+      msg += ` More deletes than done tasks lately — avoiding something?`;
+      icon = '🧐';
+    }
+
+    // Streak-aware flourish
+    if (last.type === 'completed') {
+      const streak = computeStreak();
+      if (streak > 1 && streak % 5 === 0) {
+        msg += ` 🔥 <strong>${streak}-day streak</strong> — that's a run.`;
+        icon = '🔥';
+      }
+      // All-time milestone
+      const total = totalCompletedAllTime();
+      if (MILESTONES.includes(total)) {
+        msg += ` 🎉 That's <strong>${total}</strong> tasks completed all-time — milestone unlocked.`;
+        icon = '🎉';
+      }
+      // Rapid-fire completion combo
+      const recentCompletedFast = recent.filter(a => a.type === 'completed').length;
+      if (recentCompletedFast >= 3 && gapToPrev < 5 * 60 * 1000) {
+        msg += ` That's a combo — ${recentCompletedFast} done in quick succession.`;
+        icon = '🚀';
+      }
+    }
+
+    return { icon, html: msg, ts: last.ts, sig: `${last.type}-${last.ts}` };
+  }
+
+  // ── Streak (Gen Z edition) ──
+  function computeStreak() {
+    let streak = 0;
+    const d = new Date();
+    if (!((dailyLog[todayKey()]||{}).completed > 0)) d.setDate(d.getDate()-1);
+    while ((dailyLog[dateKey(d)]||{}).completed > 0) { streak++; d.setDate(d.getDate()-1); }
+    return streak;
+  }
+
+  function getStreakVibe(streak) {
+    if (streak === 0) return { emoji:'💀', hot:false, html:'<strong>L take.</strong> Complete a task today to run it back.' };
+    if (streak === 1) return { emoji:'🌱', hot:true, html:'<strong>Day 1, bestie!</strong> We are so back, fr fr.' };
+    if (streak === 2) return { emoji:'✨', hot:true, html:'<strong>Day 2!</strong> Keep cooking, don\u2019t drop it now.' };
+    if (streak <= 4) return { emoji:'🔥', hot:true, html:`<strong>${streak} days!</strong> You\u2019re cooking rn, no cap.` };
+    if (streak <= 6) return { emoji:'🔥', hot:true, html:`<strong>${streak}-day streak!</strong> Certified W, let\u2019s gooo.` };
+    if (streak <= 13) return { emoji:'🚀', hot:true, html:`<strong>${streak} days deep!</strong> This is bussin fr fr.` };
+    if (streak <= 20) return { emoji:'👑', hot:true, html:`<strong>${streak}-day streak!</strong> Sigma grindset, highkey impressive.` };
+    if (streak <= 29) return { emoji:'💎', hot:true, html:`<strong>${streak} days!</strong> Elite era. Absolutely goated.` };
+    return { emoji:'🐐', hot:true, html:`<strong>${streak}-day streak!!</strong> You\u2019re the GOAT, no cap, unreal.` };
+  }
+
+  function renderStreak() {
+    const streak = computeStreak();
+    const banner = document.getElementById('streakBanner');
+    const flame  = document.getElementById('streakFlame');
+    document.getElementById('streakCount').textContent = streak;
+    const vibe = getStreakVibe(streak);
+    flame.textContent = vibe.emoji;
+    banner.classList.toggle('hot', vibe.hot);
+    document.getElementById('streakMsg').innerHTML = vibe.html;
+  }
+
+  // ── Streak-break detector (fires only on real day-to-day drops) ──
+  function checkStreakBreak() {
+    const current = computeStreak();
+    const storedRaw = localStorage.getItem('taskbyk_laststreak');
+    const stored = storedRaw === null ? null : parseInt(storedRaw, 10);
+    if (stored !== null && current < stored) {
+      showNoobPopup(stored, current);
+    }
+    localStorage.setItem('taskbyk_laststreak', String(current));
+  }
+
+  function showNoobPopup(oldStreak, newStreak) {
+    document.getElementById('noobSub').innerHTML =
+      `Your <strong>${oldStreak}-day streak</strong> just died 💀 back to <strong>${newStreak}</strong>.`;
+    document.getElementById('noobOverlay').classList.add('show');
+  }
+
+  function closeNoobPopup() {
+    document.getElementById('noobOverlay').classList.remove('show');
+  }
+
+  // ── AI Insights (fully local, no external calls) ──
+  function generateInsights() {
+    const insights = [];
+    const now = new Date();
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    const thisWeekKeys = []; for (let i=6;i>=0;i--){ const d=new Date(now); d.setDate(d.getDate()-i); thisWeekKeys.push(dateKey(d)); }
+    const lastWeekKeys = []; for (let i=13;i>=7;i--){ const d=new Date(now); d.setDate(d.getDate()-i); lastWeekKeys.push(dateKey(d)); }
+
+    const thisWeekCompleted = thisWeekKeys.reduce((s,k)=>s+((dailyLog[k]||{}).completed||0),0);
+    const thisWeekAdded = thisWeekKeys.reduce((s,k)=>s+((dailyLog[k]||{}).added||0),0);
+    const lastWeekCompleted = lastWeekKeys.reduce((s,k)=>s+((dailyLog[k]||{}).completed||0),0);
+
+    let bestKey=null, bestCount=-1;
+    thisWeekKeys.forEach(k => { const c=(dailyLog[k]||{}).completed||0; if (c>bestCount){bestCount=c;bestKey=k;} });
+
+    const pending = tasks.filter(t=>!t.done);
+    const streak = computeStreak();
+
+    // Weekly summary
+    const greetName = userName ? escHtml(userName) : 'you';
+    insights.push({icon:'📊', html:`<strong>This week, ${greetName}:</strong> completed <strong>${thisWeekCompleted}</strong> task${thisWeekCompleted!==1?'s':''} out of ${thisWeekAdded} added.`});
+
+    // Comparison vs last week
+    if (thisWeekCompleted > lastWeekCompleted) {
+      const diff = thisWeekCompleted - lastWeekCompleted;
+      insights.push({icon:'📈', html:`You're up <strong>${diff}</strong> task${diff!==1?'s':''} compared to last week — keep the momentum going.`});
+    } else if (thisWeekCompleted < lastWeekCompleted) {
+      const diff = lastWeekCompleted - thisWeekCompleted;
+      insights.push({icon:'📉', html:`You completed <strong>${diff}</strong> fewer task${diff!==1?'s':''} than last week. Let's pick it back up.`});
+    } else if (thisWeekCompleted > 0) {
+      insights.push({icon:'➡️', html:`Same pace as last week — <strong>${thisWeekCompleted}</strong> tasks completed.`});
+    }
+
+    // Best day
+    if (bestCount > 0) {
+      const d = new Date(bestKey + 'T00:00:00');
+      insights.push({icon:'🌟', html:`Your best day this week was <strong>${dayNames[d.getDay()]}</strong> with ${bestCount} task${bestCount!==1?'s':''} done.`});
+    }
+
+    // Streak projection
+    if (streak > 0) {
+      insights.push({icon:'🔮', html:`At your current <strong>${streak}-day streak</strong>, ${7} more days gets you to a <strong>${streak+7}-day</strong> streak.`});
+    } else {
+      insights.push({icon:'🔮', html:`Complete a task today to start rebuilding your streak.`});
+    }
+
+    // Pace projection
+    const dailyAvg = thisWeekCompleted / 7;
+    if (dailyAvg > 0) {
+      const projection = Math.round(dailyAvg * 7);
+      insights.push({icon:'🚀', html:`If you keep this pace, expect around <strong>${projection}</strong> tasks completed next week too.`});
+    }
+
+    // Pending reminder
+    if (pending.length > 0) {
+      const names = pending.slice(0,3).map(t=>t.text).join(', ');
+      insights.push({icon:'⏰', html:`You have <strong>${pending.length}</strong> pending task${pending.length!==1?'s':''}: ${escHtml(names)}${pending.length>3?'…':''}`});
+    } else {
+      insights.push({icon:'✅', html:`No pending tasks right now — you're all caught up!`});
+    }
+
+    // Not-completed (skipped) tasks — explicit "cross" flags
+    const skippedNow = tasks.filter(t => t.skipped);
+    const thisWeekSkipped = thisWeekKeys.reduce((s,k)=>s+((dailyLog[k]||{}).skipped||0),0);
+    if (skippedNow.length > 0) {
+      const names = skippedNow.slice(0,3).map(t=>t.text).join(', ');
+      insights.push({icon:'🚫', html:`<strong>${skippedNow.length}</strong> task${skippedNow.length!==1?'s':''} flagged as not completed: ${escHtml(names)}${skippedNow.length>3?'…':''}`});
+    }
+    if (thisWeekSkipped > 0) {
+      insights.push({icon:'📌', html:`You marked <strong>${thisWeekSkipped}</strong> task${thisWeekSkipped!==1?'s':''} not completed this week.`});
+    }
+
+    // Test reminders (next 7 days)
+    tests
+      .filter(t => daysUntil(t.date) >= 0 && daysUntil(t.date) <= 7)
+      .sort((a,b) => new Date(a.date) - new Date(b.date))
+      .forEach(t => {
+        const d = daysUntil(t.date);
+        const when = d===0 ? 'today' : d===1 ? 'tomorrow' : `in ${d} days`;
+        insights.push({icon:'📚', html:`<strong>${escHtml(t.name)}</strong> is ${when}${t.syllabus ? ` — cover: ${escHtml(t.syllabus)}` : ''}.`});
+      });
+
+    return insights;
+  }
+
+  let lastLiveSig = null;
+
+  function renderInsights() {
+    const el = document.getElementById('aiInsights');
+    const insights = generateInsights();
+    const live = getLiveReaction();
+
+    let html = '';
+    if (live) {
+      const isNew = live.sig !== lastLiveSig;
+      html += `<div class="ai-insight ai-live-insight${isNew ? ' ai-flash' : ''}"><span class="ai-icon">${live.icon}</span><span class="ai-text">${live.html}<span class="ai-cursor"></span><span class="ai-timestamp">${timeAgo(live.ts)}</span></span></div>`;
+      lastLiveSig = live.sig;
+    }
+    html += insights.map(i =>
+      `<div class="ai-insight"><span class="ai-icon">${i.icon}</span><span class="ai-text">${i.html}</span></div>`
+    ).join('');
+    el.innerHTML = html;
+  }
+
+  // ── Tests ──
+  function saveTests() { localStorage.setItem('taskbyk_tests', JSON.stringify(tests)); }
+
+  function toggleTestForm() {
+    const f = document.getElementById('testForm');
+    const opening = f.style.display === 'none' || !f.style.display;
+    f.style.display = opening ? 'flex' : 'none';
+    if (opening) setTimeout(() => document.getElementById('testName').focus(), 50);
+  }
+
+  // Accepts the native yyyy-mm-dd from <input type=date>, but also falls back
+  // to parsing free-typed text (dd/mm/yyyy, mm/dd/yyyy, "1 Sep 2026", etc.)
+  // in case a browser/webview doesn't render a real date picker.
+  function normalizeDate(raw) {
+    if (!raw) return null;
+    raw = raw.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    const slash = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (slash) {
+      let [, a, b, y] = slash;
+      if (y.length === 2) y = '20' + y;
+      // Ambiguous — prefer dd/mm/yyyy since that's the more common non-US format,
+      // but fall back to mm/dd/yyyy if the first part can't be a valid day.
+      let d = +a, m = +b;
+      if (d > 12) { /* must be dd/mm */ }
+      else if (m > 12) { [d, m] = [b, a].map(Number); }
+      const iso = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if (!isNaN(new Date(iso).getTime())) return iso;
+    }
+    const parsed = new Date(raw);
+    if (!isNaN(parsed.getTime())) return dateKey(parsed);
+    return null;
+  }
+
+  function setFieldError(inputId, msgId, hasError) {
+    document.getElementById(inputId).classList.toggle('field-error', hasError);
+    document.getElementById(msgId).classList.toggle('show', hasError);
+  }
+
+  function addTest() {
+    const nameEl = document.getElementById('testName');
+    const dateEl = document.getElementById('testDate');
+    const sylEl  = document.getElementById('testSyllabus');
+    const name = nameEl.value.trim();
+    const date = normalizeDate(dateEl.value);
+
+    const nameOk = !!name;
+    const dateOk = !!date;
+    setFieldError('testName', 'testNameMsg', !nameOk);
+    setFieldError('testDate', 'testDateMsg', !dateOk);
+    if (!nameOk || !dateOk) return; // stop here, but now the user SEES why
+
+    const syllabus = sylEl.value.trim();
+    tests.push({ id: Date.now(), name, date, syllabus });
+    saveTests();
+    logActivity('test_added', name);
+    nameEl.value = ''; dateEl.value = ''; sylEl.value = '';
+    setFieldError('testName', 'testNameMsg', false);
+    setFieldError('testDate', 'testDateMsg', false);
+    document.getElementById('testForm').style.display = 'none';
+    renderTests(); renderInsights();
+  }
+
+
+
+  function deleteTest(id) {
+    tests = tests.filter(t => t.id !== id);
+    saveTests();
+    logActivity('test_deleted', '');
+    renderTests(); renderInsights();
+  }
+
+  function renderTests() {
+    const list = document.getElementById('testList');
+    const upcoming = tests.filter(t => daysUntil(t.date) >= 0).sort((a,b) => new Date(a.date) - new Date(b.date));
+    if (upcoming.length === 0) {
+      list.innerHTML = `<div class="empty-mini">No tests scheduled. Add one to get reminders.</div>`;
+      return;
+    }
+    list.innerHTML = upcoming.map(t => {
+      const d = daysUntil(t.date);
+      let cls = 'normal', label = `In ${d} days`;
+      if (d === 0) { cls = 'urgent'; label = 'Today!'; }
+      else if (d === 1) { cls = 'urgent'; label = 'Tomorrow!'; }
+      else if (d <= 3) { cls = 'soon'; }
+      return `<div class="test-item">
+        <div class="test-info">
+          <span class="test-name">${escHtml(t.name)}</span>
+          ${t.syllabus ? `<span class="test-syllabus">${escHtml(t.syllabus)}</span>` : ''}
+        </div>
+        <div class="test-right">
+          <span class="test-countdown ${cls}">${label}</span>
+          <button class="test-delete" onclick="deleteTest(${t.id})" title="Remove">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Range switcher ──
+  function setRange(r, btn) {
+    graphRange = r;
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const titles = {'7d':'Last 7 Days','1m':'Last 30 Days','6m':'Last 6 Months','1y':'Last 12 Months'};
+    document.getElementById('graphTitle').textContent = titles[r];
+    renderGraph();
+  }
+
+  // ── Build dataset for each range ──
+  function buildData() {
+    const points = [];
+    const now = new Date();
+
+    if (graphRange === '7d') {
+      for (let i=6; i>=0; i--) {
+        const d = new Date(now); d.setDate(d.getDate()-i);
+        const k = dateKey(d);
+        const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        points.push({ label: days[d.getDay()], added:(dailyLog[k]||{}).added||0, completed:(dailyLog[k]||{}).completed||0, isNow: i===0 });
+      }
+    } else if (graphRange === '1m') {
+      for (let i=29; i>=0; i--) {
+        const d = new Date(now); d.setDate(d.getDate()-i);
+        const k = dateKey(d);
+        points.push({ label: i===0 ? 'Today' : i%7===0 ? d.getDate()+'/'+(d.getMonth()+1) : '', added:(dailyLog[k]||{}).added||0, completed:(dailyLog[k]||{}).completed||0, isNow: i===0 });
+      }
+    } else if (graphRange === '6m') {
+      for (let w=25; w>=0; w--) {
+        let added=0, completed=0;
+        for (let d2=0; d2<7; d2++) {
+          const d = new Date(now); d.setDate(d.getDate()-(w*7+d2));
+          const k = dateKey(d);
+          added += (dailyLog[k]||{}).added||0;
+          completed += (dailyLog[k]||{}).completed||0;
+        }
+        const d = new Date(now); d.setDate(d.getDate()-w*7);
+        const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        points.push({ label: w%4===0 ? months[d.getMonth()] : '', added, completed, isNow: w===0 });
+      }
+    } else if (graphRange === '1y') {
+      for (let m=11; m>=0; m--) {
+        const ref = new Date(now.getFullYear(), now.getMonth()-m, 1);
+        const mk = monthKey(ref);
+        let added=0, completed=0;
+        Object.keys(dailyLog).forEach(k => { if (k.startsWith(mk)) { added += dailyLog[k].added||0; completed += dailyLog[k].completed||0; } });
+        const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        points.push({ label: months[ref.getMonth()], added, completed, isNow: m===0 });
+      }
+    }
+    return points;
+  }
+
+  // ── Canvas graph ──
+  function renderGraph() {
+    const canvas = document.getElementById('perfGraph');
+    const wrap   = canvas.parentElement;
+    const dpr    = window.devicePixelRatio || 1;
+    const W      = wrap.clientWidth;
+    const H      = 130;
+    canvas.width  = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0,0,W,H);
+
+    const points = buildData();
+    const maxVal = Math.max(...points.map(p => Math.max(p.added, p.completed)), 3);
+    const padL = 30, padR = 8, padT = 14, padB = 6;
+    const chartW = W-padL-padR, chartH = H-padT-padB;
+    const stepX = points.length > 1 ? chartW/(points.length-1) : chartW;
+
+    lastChartMeta = { padL, padT, chartW, chartH, maxVal, points, stepX };
+
+    function xAt(i) { return padL + i*stepX; }
+    function yAt(v) { return padT + chartH - (v/maxVal)*chartH; }
+
+    ctx.strokeStyle = 'rgba(168,85,247,0.09)';
+    ctx.lineWidth = 1;
+    ctx.font = '10px DM Sans, sans-serif';
+    ctx.fillStyle = '#7a7290';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    const ticks = 3;
+    for (let g=0; g<=ticks; g++) {
+      const val = Math.round((maxVal/ticks)*g);
+      const y = padT + chartH - (g/ticks)*chartH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+chartW, y); ctx.stroke();
+      ctx.fillText(val, padL-8, y);
+    }
+
+    function smoothPath(key) {
+      ctx.beginPath();
+      points.forEach((p, i) => {
+        const x = xAt(i), y = yAt(p[key]);
+        if (i === 0) { ctx.moveTo(x, y); return; }
+        const prevX = xAt(i-1), prevY = yAt(points[i-1][key]);
+        const midX = (prevX + x) / 2;
+        ctx.bezierCurveTo(midX, prevY, midX, y, x, y);
+      });
+    }
+
+    smoothPath('completed');
+    ctx.lineTo(xAt(points.length-1), padT+chartH);
+    ctx.lineTo(padL, padT+chartH);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padT, 0, padT+chartH);
+    grad.addColorStop(0, 'rgba(168,85,247,0.32)');
+    grad.addColorStop(1, 'rgba(168,85,247,0)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.save();
+    ctx.setLineDash([4,4]);
+    smoothPath('added');
+    ctx.strokeStyle = '#4a4360'; ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    smoothPath('completed');
+    ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.stroke();
+
+    points.forEach((p, i) => {
+      const x = xAt(i), y = yAt(p.completed);
+      ctx.beginPath();
+      ctx.arc(x, y, p.isNow ? 4 : 2.5, 0, Math.PI*2);
+      ctx.fillStyle = p.isNow ? '#a855f7' : '#0b0913';
+      ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = '#a855f7';
+      ctx.stroke();
+    });
+
+    const labelsEl = document.getElementById('graphDays');
+    labelsEl.innerHTML = points.map(p =>
+      `<div class="graph-day-label" style="width:${stepX}px;color:${p.isNow?'#a855f7':''}">${p.label}</div>`
+    ).join('');
+  }
+
+  function setupGraphTooltip() {
+    const canvas = document.getElementById('perfGraph');
+    const tooltip = document.getElementById('graphTooltip');
+    canvas.addEventListener('mousemove', (e) => {
+      if (!lastChartMeta) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const { padL, points, stepX } = lastChartMeta;
+      let idx = Math.round((x - padL) / stepX);
+      idx = Math.max(0, Math.min(points.length-1, idx));
+      const p = points[idx];
+      const px = padL + idx*stepX;
+      tooltip.style.left = px + 'px';
+      tooltip.innerHTML = `
+        <div class="tt-date">${p.label || '—'}</div>
+        <div class="tt-val"><span class="tt-dot" style="background:#a855f7"></span>Done: ${p.completed}</div>
+        <div class="tt-val"><span class="tt-dot" style="background:#4a4360"></span>Added: ${p.added}</div>`;
+      tooltip.classList.add('visible');
+    });
+    canvas.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+  }
+
+  // ── Core task functions ──
+  function save() { localStorage.setItem('taskbyk', JSON.stringify(tasks)); }
+
+  function addTask() {
+    const input = document.getElementById('taskInput');
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.unshift({ id: Date.now(), text, done: false, createdAt: Date.now() });
+    input.value = '';
+    logToday('added');
+    logActivity('added', text);
+    save(); render();
+  }
+
+  function markDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    if (!t.done) {
+      if (t.skipped) { t.skipped = false; const k=todayKey(); if (dailyLog[k] && dailyLog[k].skipped>0){dailyLog[k].skipped--; saveLog();} }
+      t.done = true;
+      logToday('completed');
+      logActivity('completed', t.text);
+    }
+    save(); render();
+  }
+
+  // Cross button has two jobs depending on current state:
+  // 1) task is DONE       -> undo it, back to pending
+  // 2) task is PENDING    -> explicitly flag it "not completed" (skipped), so it
+  //    shows up in AI Insights instead of silently doing nothing
+  // 3) task is SKIPPED    -> clicking again clears the flag, back to plain pending
+  function markUndone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    const k = todayKey();
+    if (!dailyLog[k]) dailyLog[k] = { added:0, completed:0, skipped:0 };
+
+    if (t.done) {
+      t.done = false;
+      if (dailyLog[k].completed > 0) dailyLog[k].completed--;
+      saveLog();
+      logActivity('undone', t.text);
+    } else if (!t.skipped) {
+      t.skipped = true;
+      dailyLog[k].skipped = (dailyLog[k].skipped || 0) + 1;
+      saveLog();
+      logActivity('skipped', t.text);
+    } else {
+      t.skipped = false;
+      if (dailyLog[k].skipped > 0) dailyLog[k].skipped--;
+      saveLog();
+      logActivity('unskipped', t.text);
+    }
+    save(); render();
+  }
+
+  function deleteTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) logActivity('deleted', t.text);
+    tasks = tasks.filter(t => t.id !== id);
+    save(); render();
+  }
+  function clearDone() { tasks = tasks.filter(t => !t.done); save(); render(); }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function render() {
+    const list = document.getElementById('taskList');
+    const empty = document.getElementById('emptyState');
+    const clearBtn = document.getElementById('clearBtn');
+
+    tasks.forEach(t => { if (!t.createdAt) t.createdAt = t.id; });
+
+    const filtered = tasks.filter(t => {
+      if (filter==='pending') return !t.done;
+      if (filter==='done') return t.done;
+      return true;
+    });
+
+    document.getElementById('totalCount').textContent = tasks.length;
+    document.getElementById('pendingCount').textContent = tasks.filter(t=>!t.done).length;
+    document.getElementById('doneCount').textContent = tasks.filter(t=>t.done).length;
+    clearBtn.style.display = tasks.some(t=>t.done) ? 'inline' : 'none';
+
+    if (filtered.length === 0) {
+      list.innerHTML=''; empty.style.display='block';
+    } else {
+      empty.style.display='none';
+      list.innerHTML = filtered.map(t => `
+        <div class="task-item ${t.done?'done':''} ${t.skipped?'skipped':''}" id="item-${t.id}">
+          <div class="task-actions">
+            <button class="action-btn tick ${t.done?'active':''}" onclick="markDone(${t.id})" title="Mark complete">
+              <svg width="14" height="12" viewBox="0 0 12 10" fill="none">
+                <path d="M1 5L4.5 8.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="action-btn cross ${t.skipped?'active':''}" onclick="markUndone(${t.id})" title="${t.done ? 'Undo complete' : t.skipped ? 'Undo not-completed' : 'Mark not completed'}">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="task-body">
+            <span class="task-text">${escHtml(t.text)}</span>
+            <span class="task-date">${formatTaskDate(t.createdAt)}${t.skipped ? ' · <span class="skip-tag">Not completed</span>' : ''}</span>
+          </div>
+          <button class="delete-btn" onclick="deleteTask(${t.id})" title="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    renderStreak();
+    renderGraph();
+    renderInsights();
+    renderTests();
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Midnight auto-refresh (also where streak-break is detected) ──
+  function scheduleMidnightRefresh() {
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 1, 0);
+    const msUntilMidnight = nextMidnight - now;
+    setTimeout(() => {
+      render();
+      checkStreakBreak();
+      scheduleMidnightRefresh();
+    }, msUntilMidnight);
+  }
+
+  document.getElementById('taskInput').addEventListener('keydown', e => { if(e.key==='Enter') addTask(); });
+  window.addEventListener('resize', renderGraph);
+
+  ['testName','testDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTest(); } });
+  });
+  ['testName','testDate','testSyllabus'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => {
+      if (id === 'testName') setFieldError('testName','testNameMsg', false);
+      if (id === 'testDate') setFieldError('testDate','testDateMsg', false);
+    });
+  });
+
+  // Keeps the "time ago" text on the live reaction ticking even with no new actions —
+  // this is the "someone is watching" feel without any real polling/network call.
+  setInterval(renderInsights, 20000);
+
+  const testDateInput = document.getElementById('testDate');
+  if (testDateInput) testDateInput.min = todayKey();
+
+  setupGraphTooltip();
+  renderGreeting();
+  render();
+  checkStreakBreak();
+  scheduleMidnightRefresh();
+</script>
+</body>
+</html>
